@@ -13,6 +13,7 @@ public class Spawner : MonoBehaviour
     private int _currentWaveNumber = 0;
     private float _timeAfterLastSpawn;
     private int _spawned;
+    private int _spawnedTemplateIndex = 0;
 
     public event UnityAction AllEnemySpawned;
     public event UnityAction<int,int> EnemyCountChanged;
@@ -31,10 +32,13 @@ public class Spawner : MonoBehaviour
 
         if (_timeAfterLastSpawn >= _currentWave.Delay)
         {
-            InstantiateEnemy();
+            InstantiateEnemy(_currentWave.Templates[_spawnedTemplateIndex++]);
             _spawned++;
             _timeAfterLastSpawn = 0;
             EnemyCountChanged?.Invoke(_spawned, _currentWave.Count);
+
+            if (_currentWave.Templates.Length <= _spawnedTemplateIndex)
+                _spawnedTemplateIndex = 0;
         }
 
         if (_currentWave.Count <= _spawned)
@@ -43,12 +47,13 @@ public class Spawner : MonoBehaviour
                 AllEnemySpawned?.Invoke();
 
             _currentWave = null;
+            _spawnedTemplateIndex = 0;
         }
     }
 
-    private void InstantiateEnemy()
+    private void InstantiateEnemy(GameObject template)
     {
-        Enemy enemy = Instantiate(_currentWave.Template, _spawnPoint.position, _spawnPoint.rotation, _spawnPoint).GetComponent<Enemy>();
+        Enemy enemy = Instantiate(template, _spawnPoint.position, _spawnPoint.rotation, _spawnPoint).GetComponent<Enemy>();
         enemy.Init(_player);
         enemy.Dying += OnEnemyDying;
     }
@@ -76,7 +81,7 @@ public class Spawner : MonoBehaviour
 [System.Serializable]
 public class Wave
 {
-    public GameObject Template;
+    public GameObject[] Templates;
     public float Delay;
     public int Count;
 }
