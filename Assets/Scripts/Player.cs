@@ -56,7 +56,7 @@ public class Player : MonoBehaviour
     {
         Money -= weapon.Price;
         MoneyChanged?.Invoke(Money);
-        _weapons.Add(weapon);
+        _weapons.Add(Instantiate(weapon));
     }
 
     public void NextWeapon()
